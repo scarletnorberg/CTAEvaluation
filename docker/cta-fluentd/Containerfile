@@ -1,5 +1,7 @@
 FROM almalinux/9-base
 
+ADD cta-public-5-alma9.repo  /etc/yum.repos.d/
+
 RUN dnf upgrade -y \
     && dnf clean all \
     && rm -rf /var/cache/dnf
@@ -14,8 +16,6 @@ RUN dnf install -y git which nano wget jq sudo epel-release \
     && dnf clean all \
     && rm -rf /var/cache/dnf
 
-ADD cta-public-5-alma9.repo  /etc/yum.repos.d/
-
 RUN yum -y install cta-cli unzip \
     && yum clean all \
     && rm -rf /var/cache/yum
@@ -23,6 +23,9 @@ RUN yum -y install cta-cli unzip \
 #fluentd install with tdagent
 RUN yum install -y sudo
 RUN curl -L https://toolbelt.treasuredata.com/sh/install-redhat-td-agent4.sh | sh
+RUN td-agent-gem install fluent-plugin-parser-logfmt
+RUN td-agent-gem install fluent-plugin-rename-key
+RUN td-agent-gem install fluent-plugin-filter_typecast
 
 
 # From here we want to remake the container as this code will change
@@ -43,11 +46,7 @@ RUN git clone https://github.com/ericvaandering/CTAEvaluation.git
 #ADD ctafrontend_client_sss.keytab /etc/ctafrontend_client_sss.keytab
 #RUN chmod o+rw /etc/ctafrontend_client_sss.keytab
 
-RUN yum install jq -y
 
-RUN td-agent-gem install fluent-plugin-parser-logfmt
-RUN td-agent-gem install fluent-plugin-rename-key
-RUN td-agent-gem install fluent-plugin-filter_typecast
 #RUN td-agent-gem install fluent-plugin-multi-format-parser -v 1.0.0
 ADD entrypoint.sh /
 
